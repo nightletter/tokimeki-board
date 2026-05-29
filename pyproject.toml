@@ -1,0 +1,44 @@
+[project]
+name = "tokimeki-board"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "altgraph>=0.17.5",
+    "importlib-metadata>=8.7.1",
+    "macholib>=1.16.4 ; sys_platform == 'darwin'",
+    "packaging>=26.2",
+    "pillow>=11.3.0",
+    "pyinstaller>=6.20.0",
+    "pyinstaller-hooks-contrib>=2026.5",
+    "pynput>=1.8.2",
+    "pyobjc-core>=11.1 ; sys_platform == 'darwin'",
+    "pyobjc-framework-applicationservices>=11.1 ; sys_platform == 'darwin'",
+    "pyobjc-framework-cocoa>=11.1 ; sys_platform == 'darwin'",
+    "pyobjc-framework-coretext>=11.1 ; sys_platform == 'darwin'",
+    "pyobjc-framework-quartz>=11.1 ; sys_platform == 'darwin'",
+    "PyQt6>=6.7.0",
+    "PyQt6-sip>=13.7.0",
+    "six>=1.17.0",
+    "zipp>=3.23.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

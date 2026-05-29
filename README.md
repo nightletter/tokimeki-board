@@ -17,7 +17,7 @@
 
 ## 🚀 설치 방법 (Installation)
 
-[ [Releases](https://www.notion.so/releases) ] 페이지로 이동 후 아래 가이드를 참고해주세요.
+[ [Releases](https://github.com/nightletter/tokimeki-board/releases) ] 페이지로 이동 후 아래 가이드를 참고해주세요.
 
 <br>
 

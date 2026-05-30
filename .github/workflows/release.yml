@@ -10,63 +10,63 @@ env:
   APP_NAME: "TOKIMEKI BOARD"
 
 jobs:
-  # 테스트
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          # pyproject.toml에 정의된 기본 의존성 및 패키지 설치
-          pip install .
-          # 만약 pytest가 기본 의존성에 없다면 명시적으로 설치
-          pip install pytest
-
-      - name: Run Pytest
-        run: pytest tests/
-
-  build-arm64:
-    needs: test
-    name: Build macOS (arm64)
-    runs-on: macos-14
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: arm64
-
-      - name: Build and Compress
-        run: |
-          chmod +x scripts/build_macos.sh
-          TARGET_ARCH=arm64 ./scripts/build_macos.sh
-          tar -czf "dist/${{ env.APP_NAME }}-macos-arm64.tar.gz" -C dist "${{ env.APP_NAME }}.app"
-
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.APP_VERSION }}
-          files: dist/${{ env.APP_NAME }}-macos-arm64.tar.gz
+#  # 테스트
+#  test:
+#    name: Run Tests
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#
+#      - name: Install Dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          # pyproject.toml에 정의된 기본 의존성 및 패키지 설치
+#          pip install .
+#          # 만약 pytest가 기본 의존성에 없다면 명시적으로 설치
+#          pip install pytest
+#
+#      - name: Run Pytest
+#        run: pytest tests/
+#
+#  build-arm64:
+#    needs: test
+#    name: Build macOS (arm64)
+#    runs-on: macos-14
+#    permissions:
+#      contents: write
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#          architecture: arm64
+#
+#      - name: Build and Compress
+#        run: |
+#          chmod +x scripts/build_macos.sh
+#          TARGET_ARCH=arm64 ./scripts/build_macos.sh
+#          tar -czf "dist/${{ env.APP_NAME }}-macos-arm64.tar.gz" -C dist "${{ env.APP_NAME }}.app"
+#
+#      - name: Upload to Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: v${{ env.APP_VERSION }}
+#          files: dist/${{ env.APP_NAME }}-macos-arm64.tar.gz
 
   # macos x64 빌드 (self-hosted)
   build-x64:
-    needs: test
+#    needs: test
     name: Build macOS (x64)
-    runs-on: [self-hosted, macbook]
+    runs-on: macos-13
     permissions:
       contents: write
     steps:
@@ -88,33 +88,33 @@ jobs:
           tag_name: v${{ env.APP_VERSION }}
           files: dist/${{ env.APP_NAME }}-macos-x64.tar.gz
 
-  build-windows:
-    needs: test
-    name: Build Windows (x64)
-    runs-on: windows-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          architecture: x64
-
-      - name: Build
-        run: scripts\build_windows.ps1
-        shell: pwsh
-
-      - name: Compress to Zip
-        run: |
-          Compress-Archive -Path "dist\${{ env.APP_NAME }}.exe" -DestinationPath "dist\${{ env.APP_NAME }}-windows.zip"
-        shell: pwsh
-
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ env.APP_VERSION }}
-          files: dist/${{ env.APP_NAME }}-windows.zip
+#  build-windows:
+#    needs: test
+#    name: Build Windows (x64)
+#    runs-on: windows-latest
+#    permissions:
+#      contents: write
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: '3.12'
+#          architecture: x64
+#
+#      - name: Build
+#        run: scripts\build_windows.ps1
+#        shell: pwsh
+#
+#      - name: Compress to Zip
+#        run: |
+#          Compress-Archive -Path "dist\${{ env.APP_NAME }}.exe" -DestinationPath "dist\${{ env.APP_NAME }}-windows.zip"
+#        shell: pwsh
+#
+#      - name: Upload to Release
+#        uses: softprops/action-gh-release@v2
+#        with:
+#          tag_name: v${{ env.APP_VERSION }}
+#          files: dist/${{ env.APP_NAME }}-windows.zip

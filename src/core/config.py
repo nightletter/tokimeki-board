@@ -60,7 +60,7 @@ def default_config() -> AppConfig:
     
     return AppConfig(
         app_name="TOKIMEKI BOARD",
-        version="0.0.1",
+        version="0.1.0",
         size=display_sizes.m_size,
         motion=MotionConfig(
             offset_x=10,

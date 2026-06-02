@@ -184,6 +184,7 @@ class TestAppConfig:
         scroll_mapper = create_scroll_mapper()
         return AppConfig(
             app_name="Test App",
+            version="0.1.0",
             size=180,
             motion=MotionConfig(offset_x=0, offset_y=0, smooth=0.15, snap_threshold=0.3),
             timing=TimingConfig(poll_ms=8, image_change_ms=5000, scroll_flash_ms=500),

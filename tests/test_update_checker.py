@@ -75,10 +75,12 @@ class TestUpdateChecker:
     @patch("src.services.update_checker.requests")
     def test_check_for_updates_network_error(self, mock_requests):
         """Test update check with network error."""
-        mock_requests.get.side_effect = Exception("Network error")
+        import src.services.update_checker
+        mock_requests.get.side_effect = src.services.update_checker.RequestException("Network error")
 
         checker = UpdateChecker("0.1.0")
-        result = checker.check_for_updates()
+        with patch.object(checker, "_fetch_with_urllib", return_value=None):
+            result = checker.check_for_updates()
 
         assert result.has_update is False
         assert result.current_version == "0.1.0"
@@ -91,10 +93,30 @@ class TestUpdateChecker:
         try:
             import src.services.update_checker
             src.services.update_checker.requests = None
-            result = checker.check_for_updates()
+            with patch.object(checker, "_fetch_with_urllib", return_value=None):
+                result = checker.check_for_updates()
             assert result.has_update is False
         finally:
             src.services.update_checker.requests = original_requests
+
+    @patch("src.services.update_checker.requests")
+    def test_check_for_updates_falls_back_to_urllib(self, mock_requests):
+        """Test fallback path when requests call fails."""
+        import src.services.update_checker
+        mock_requests.get.side_effect = src.services.update_checker.RequestException("requests failed")
+        checker = UpdateChecker("0.1.0")
+        with patch.object(
+            checker,
+            "_fetch_with_urllib",
+            return_value={
+                "tag_name": "v0.2.0",
+                "html_url": "https://github.com/nightletter/tokimeki-board/releases/tag/v0.2.0",
+            },
+        ):
+            result = checker.check_for_updates()
+
+        assert result.has_update is True
+        assert result.latest_version == "0.2.0"
 
     @patch("src.services.update_checker.requests")
     def test_check_for_updates_async(self, mock_requests):

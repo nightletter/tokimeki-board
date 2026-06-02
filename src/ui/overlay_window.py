@@ -254,6 +254,12 @@ class OverlayWindow(QWidget):
         msg_box.setInformativeText("다운로드 페이지로 이동하시겠습니까?")
         msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
+        if sys.platform == "win32":
+            msg_box.setStyleSheet(
+                "QLabel{min-width: 300px; font-size: 13px;} "
+                "QPushButton{min-width: 84px; padding: 6px 12px; font-size: 12px;}"
+            )
+            msg_box.setMinimumSize(420, 180)
         
         if msg_box.exec() == QMessageBox.StandardButton.Yes:
             QDesktopServices.openUrl(QUrl(result.download_url))
@@ -269,4 +275,3 @@ class OverlayWindow(QWidget):
         if self.update_check_timer.isSingleShot():
             self.update_check_timer.setSingleShot(False)
             self.update_check_timer.start(86400000)
-

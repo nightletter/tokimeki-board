@@ -7,13 +7,15 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from PyQt6.QtCore import QObject, pyqtSignal
 
+VERSION_URL = "https://nightletter.github.io/tokimeki-board/version.json"
+DOWNLOAD_URL = "https://github.com/nightletter/tokimeki-board/releases/tag/v{}"
+
 try:
     import requests
     from requests import RequestException
 except ImportError:
     requests = None
     RequestException = Exception
-
 
 @dataclass(frozen=True)
 class UpdateCheckResult:
@@ -25,7 +27,6 @@ class UpdateCheckResult:
 
 class UpdateChecker(QObject):
     update_result = pyqtSignal(object)
-    GITHUB_API_URL = "https://api.github.com/repos/nightletter/tokimeki-board/releases/latest"
     REQUEST_HEADERS = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "tokimeki-board-update-checker",
@@ -40,7 +41,8 @@ class UpdateChecker(QObject):
         if release_data is None:
             return UpdateCheckResult(has_update=False, current_version=self.current_version)
 
-        latest_version = release_data.get("tag_name", "").lstrip("v")
+        latest_version = release_data.get("version", "0.0.0");
+
         if not latest_version:
             return UpdateCheckResult(has_update=False, current_version=self.current_version)
 
@@ -49,7 +51,7 @@ class UpdateChecker(QObject):
                 has_update=True,
                 current_version=self.current_version,
                 latest_version=latest_version,
-                download_url=release_data.get("html_url"),
+                download_url=DOWNLOAD_URL.format(latest_version)
             )
 
         return UpdateCheckResult(has_update=False, current_version=self.current_version)
@@ -63,14 +65,14 @@ class UpdateChecker(QObject):
 
     def _fetch_with_requests(self) -> dict | None:
         try:
-            response = requests.get(self.GITHUB_API_URL, timeout=5, headers=self.REQUEST_HEADERS)
+            response = requests.get(VERSION_URL, timeout=5, headers=self.REQUEST_HEADERS)
             response.raise_for_status()
             return response.json()
         except (RequestException, ValueError, TypeError):
             return None
 
     def _fetch_with_urllib(self) -> dict | None:
-        request = Request(self.GITHUB_API_URL, headers=self.REQUEST_HEADERS)
+        request = Request(VERSION_URL, headers=self.REQUEST_HEADERS)
         try:
             with urlopen(request, timeout=5) as response:
                 return json.loads(response.read().decode("utf-8"))

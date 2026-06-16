@@ -21,7 +21,8 @@ jobs:
       - name: Read Version
         id: read_version
         run: |
-          echo "app_version=$(python3 -c \"import json; print(json.load(open('version.json'))['version'])\")" >> "$GITHUB_OUTPUT"
+          app_version=$(python3 -c 'import json; from pathlib import Path; print(json.loads(Path("version.json").read_text())["version"])')
+          echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
 
   # 테스트
   test:

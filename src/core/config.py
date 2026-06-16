@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from core import display_sizes
+from core.version import load_current_version
 from mappers.keyboard_mapper import KeyboardMapper, create_keyboard_mapper
 from mappers.scroll_mapper import ScrollMapper, create_scroll_mapper
 
@@ -57,10 +58,10 @@ class AppConfig:
 def default_config() -> AppConfig:
     keyboard_mapper = create_keyboard_mapper()
     scroll_mapper = create_scroll_mapper()
-    
+
     return AppConfig(
         app_name="TOKIMEKI BOARD",
-        version="0.1.0",
+        version=load_current_version(),
         size=display_sizes.m_size,
         motion=MotionConfig(
             offset_x=10,

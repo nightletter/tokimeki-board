@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from unittest.mock import mock_open
+
 import pytest
 
+import core.version as version_module
 from core.config import (
     AppConfig,
     AssetsConfig,
@@ -13,6 +16,7 @@ from core.config import (
     TimingConfig,
     default_config,
 )
+from core.version import load_current_version
 from mappers.keyboard_mapper import create_keyboard_mapper
 from mappers.scroll_mapper import create_scroll_mapper
 
@@ -218,6 +222,7 @@ class TestDefaultConfig:
         """Test that default_config returns a valid AppConfig."""
         config = default_config()
         assert isinstance(config, AppConfig)
+        assert config.version == load_current_version()
 
     def test_default_config_has_required_fields(self):
         """Test that default_config includes all required fields."""
@@ -278,3 +283,40 @@ class TestDefaultConfig:
         config = default_config()
         with pytest.raises(AttributeError):
             config.app_name = "Modified"
+
+
+class TestVersionLoader:
+    """Test version loading and caching."""
+
+    def test_load_current_version_is_cached(self, monkeypatch):
+        """Test that the version file is only opened once."""
+        load_current_version.cache_clear()
+
+        open_mock = mock_open(read_data='{"version": "9.9.9"}')
+
+        class DummyPath:
+            def __init__(self):
+                self.open_calls = 0
+
+            def open(self, encoding: str = "utf-8"):
+                self.open_calls += 1
+                return open_mock()
+
+        dummy_path = DummyPath()
+        monkeypatch.setattr(version_module, "VERSION_PATH", dummy_path)
+
+        assert load_current_version() == "9.9.9"
+        assert load_current_version() == "9.9.9"
+        assert dummy_path.open_calls == 1
+
+    def test_load_current_version_falls_back_when_missing(self, monkeypatch):
+        """Test that a missing version file does not break startup."""
+        load_current_version.cache_clear()
+
+        class MissingPath:
+            def open(self, encoding: str = "utf-8"):
+                raise FileNotFoundError
+
+        monkeypatch.setattr(version_module, "VERSION_PATH", MissingPath())
+
+        assert load_current_version() == "0.0.0"

@@ -49,6 +49,7 @@ PY_BIN="${VENV_DIR}/bin/python"
   --osx-bundle-identifier "$BUNDLE_ID" \
   "${ICON_ARGS[@]:-}" \
   --add-data "${ROOT_DIR}/assets:assets" \
+  --add-data "${ROOT_DIR}/version.json:." \
   main.py
 
 APP_BUNDLE_PATH="${ROOT_DIR}/dist/${BUNDLE_NAME}.app"

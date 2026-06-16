@@ -32,7 +32,8 @@ $PyArgs = @(
     "--distpath", "dist",
     "--noconsole",
     "--name", $App,
-    "--add-data", "$($AssetsSourcePath);assets"
+    "--add-data", "$($AssetsSourcePath);assets",
+    "--add-data", "$($RootPath)\version.json;."
 )
 
 # 아이콘 처리

@@ -43,8 +43,7 @@ class TestUpdateChecker:
         """Test successful update check with new version."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "tag_name": "v0.2.0",
-            "html_url": "https://github.com/nightletter/tokimeki-board/releases/tag/v0.2.0",
+            "version": "0.2.0",
         }
         mock_requests.get.return_value = mock_response
 
@@ -61,8 +60,7 @@ class TestUpdateChecker:
         """Test successful update check with no new version."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "tag_name": "v0.1.0",
-            "html_url": "https://github.com/nightletter/tokimeki-board/releases/tag/v0.1.0",
+            "version": "0.1.0",
         }
         mock_requests.get.return_value = mock_response
 
@@ -109,8 +107,7 @@ class TestUpdateChecker:
             checker,
             "_fetch_with_urllib",
             return_value={
-                "tag_name": "v0.2.0",
-                "html_url": "https://github.com/nightletter/tokimeki-board/releases/tag/v0.2.0",
+                "version": "0.2.0",
             },
         ):
             result = checker.check_for_updates()
@@ -123,8 +120,7 @@ class TestUpdateChecker:
         """Test asynchronous update check."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "tag_name": "v0.2.0",
-            "html_url": "https://github.com/nightletter/tokimeki-board/releases/tag/v0.2.0",
+            "version": "0.2.0",
         }
         mock_requests.get.return_value = mock_response
 
@@ -145,12 +141,11 @@ class TestUpdateChecker:
         assert callback_result[0].latest_version == "0.2.0"
 
     @patch("src.services.update_checker.requests")
-    def test_check_for_updates_empty_tag_name(self, mock_requests):
-        """Test update check with empty tag name in response."""
+    def test_check_for_updates_empty_version(self, mock_requests):
+        """Test update check with empty version in response."""
         mock_response = MagicMock()
         mock_response.json.return_value = {
-            "tag_name": "",
-            "html_url": "https://example.com",
+            "version": "",
         }
         mock_requests.get.return_value = mock_response
 

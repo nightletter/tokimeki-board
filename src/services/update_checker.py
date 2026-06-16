@@ -41,10 +41,11 @@ class UpdateChecker(QObject):
         if release_data is None:
             return UpdateCheckResult(has_update=False, current_version=self.current_version)
 
-        latest_version = release_data.get("version", "0.0.0");
-
-        if not latest_version:
+        latest_version = release_data.get("version")
+        if not isinstance(latest_version, str) or not latest_version.strip():
             return UpdateCheckResult(has_update=False, current_version=self.current_version)
+
+        latest_version = latest_version.strip()
 
         if self._compare_versions(latest_version, self.current_version):
             return UpdateCheckResult(

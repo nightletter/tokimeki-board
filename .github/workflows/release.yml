@@ -6,10 +6,23 @@ on:
   workflow_dispatch: {}
 
 env:
-  APP_VERSION: "0.1.0"
   APP_NAME: "TOKIMEKI BOARD"
 
 jobs:
+  prepare:
+    name: Read Version
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.read_version.outputs.app_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Version
+        id: read_version
+        run: |
+          echo "app_version=$(python3 -c \"import json; print(json.load(open('version.json'))['version'])\")" >> "$GITHUB_OUTPUT"
+
   # 테스트
   test:
     name: Run Tests
@@ -35,7 +48,7 @@ jobs:
         run: pytest tests/
 
   build-arm64:
-    needs: test
+    needs: [prepare, test]
     name: Build macOS (arm64)
     runs-on: macos-14
     permissions:
@@ -59,12 +72,12 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
+          tag_name: v${{ needs.prepare.outputs.app_version }}
           files: dist/${{ env.APP_NAME }}-macos-arm64.tar.gz
 
   # macos x64 빌드 (self-hosted)
   build-x64:
-    needs: test
+    needs: [prepare, test]
     name: Build macOS (x64)
     runs-on: [self-hosted, macbook]
     permissions:
@@ -85,11 +98,11 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
+          tag_name: v${{ needs.prepare.outputs.app_version }}
           files: dist/${{ env.APP_NAME }}-macos-x64.tar.gz
 
   build-windows:
-    needs: test
+    needs: [prepare, test]
     name: Build Windows (x64)
     runs-on: windows-latest
     permissions:
@@ -116,5 +129,5 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.APP_VERSION }}
+          tag_name: v${{ needs.prepare.outputs.app_version }}
           files: dist/${{ env.APP_NAME }}-windows.zip

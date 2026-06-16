@@ -20,6 +20,8 @@ dependencies = [
     "pyobjc-framework-quartz>=11.1 ; sys_platform == 'darwin'",
     "PyQt6>=6.7.0",
     "PyQt6-sip>=13.7.0",
+    "pytest>=9.0.3",
+    "requests>=2.31.0",
     "six>=1.17.0",
     "zipp>=3.23.1",
 ]

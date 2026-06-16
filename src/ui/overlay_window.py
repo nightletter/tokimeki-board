@@ -6,7 +6,9 @@ from dataclasses import replace
 
 from PyQt6.QtCore import Qt, QTimer, QPoint, pyqtSignal
 from PyQt6.QtGui import QCursor
-from PyQt6.QtWidgets import QApplication, QLabel, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QMessageBox
+from PyQt6.QtGui import QDesktopServices
+from PyQt6.QtCore import QUrl
 
 from core.config import AppConfig
 from src.services.input_handler import create_keypress_listener, create_scroll_listener
@@ -16,11 +18,13 @@ from src.ui.qt_renderer import QtImageRenderer
 from src.ui.system_tray import SystemTrayController
 from src.services.cursor_follower import CursorFollower
 from src.services.image_controller import ImageCommand, ImageCommandType, ImageController, KeyImageResult
+from src.services.update_checker import UpdateChecker
 
 
 class OverlayWindow(QWidget):
     key_pressed = pyqtSignal(object)
     mouse_scrolled = pyqtSignal(object)
+    update_checked = pyqtSignal(object)
 
     def __init__(
         self,
@@ -46,6 +50,7 @@ class OverlayWindow(QWidget):
         self._mouse_listener = None
         self._tray: SystemTrayController | None = None
         self._last_command: ImageCommand | None = None
+        self._update_checker = UpdateChecker(config.version)
 
         self._setup_window()
         self._setup_label()
@@ -54,6 +59,7 @@ class OverlayWindow(QWidget):
         self._setup_timers()
         self.key_pressed.connect(self._on_key_event)
         self.mouse_scrolled.connect(self._on_scroll_event)
+        self.update_checked.connect(self._on_update_checked)
 
         self._apply_command(self._image_controller.initial_command())
         self._setup_keyboard_listener()
@@ -123,6 +129,12 @@ class OverlayWindow(QWidget):
         self.scroll_timer = QTimer(self)
         self.scroll_timer.setSingleShot(True)
         self.scroll_timer.timeout.connect(self._reset_scroll_image_when_idle)
+
+        # Setup update check: first check after 1 second, then every 24 hours
+        self.update_check_timer = QTimer(self)
+        self.update_check_timer.timeout.connect(self._on_update_check_timer_tick)
+        self.update_check_timer.setSingleShot(True)
+        self.update_check_timer.start(1000)
 
     def _setup_keyboard_listener(self):
         if self._keyboard_backend is None:
@@ -227,3 +239,39 @@ class OverlayWindow(QWidget):
 
     def focusOutEvent(self, event):
         super().focusOutEvent(event)
+
+    def _check_for_updates(self):
+        self._update_checker.check_for_updates_async(lambda result: self.update_checked.emit(result))
+
+    def _on_update_checked(self, result):
+        if result.has_update and result.latest_version and result.download_url:
+            self._show_update_dialog(result)
+
+    def _show_update_dialog(self, result):
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(f"{self._config.app_name}")
+        msg_box.setText( f"새 버전이 출시되었습니다." )
+        msg_box.setInformativeText("다운로드 페이지로 이동하시겠습니까?")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
+        if sys.platform == "win32":
+            msg_box.setStyleSheet(
+                "QLabel{min-width: 300px; font-size: 13px;} "
+                "QPushButton{min-width: 84px; padding: 6px 12px; font-size: 12px;}"
+            )
+            msg_box.setMinimumSize(420, 180)
+        
+        if msg_box.exec() == QMessageBox.StandardButton.Yes:
+            QDesktopServices.openUrl(QUrl(result.download_url))
+
+    def showEvent(self, event):
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+
+    def _on_update_check_timer_tick(self):
+        self._check_for_updates()
+        if self.update_check_timer.isSingleShot():
+            self.update_check_timer.setSingleShot(False)
+            self.update_check_timer.start(86400000)

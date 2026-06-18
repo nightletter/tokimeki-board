@@ -32,6 +32,52 @@ SPECIAL_KEYS_COMMON = frozenset(
 
 
 # ============================================================================
+# Numpad Normalization
+# ============================================================================
+
+NUMPAD_NAME_ALIASES = {
+    **{f"num_{digit}": str(digit) for digit in range(10)},
+    **{f"numpad_{digit}": str(digit) for digit in range(10)},
+    "decimal": ".",
+    "num_decimal": ".",
+    "numpad_decimal": ".",
+}
+
+NUMPAD_VK_CODES_WINDOWS = {
+    96: "0",
+    97: "1",
+    98: "2",
+    99: "3",
+    100: "4",
+    101: "5",
+    102: "6",
+    103: "7",
+    104: "8",
+    105: "9",
+    110: ".",
+}
+
+NUMPAD_VK_CODES_MAC = {
+    65: ".",
+    82: "0",
+    83: "1",
+    84: "2",
+    85: "3",
+    86: "4",
+    87: "5",
+    88: "6",
+    89: "7",
+    91: "8",
+    92: "9",
+}
+
+NUMPAD_VK_CODES_BY_PLATFORM = {
+    "darwin": NUMPAD_VK_CODES_MAC,
+    "win32": NUMPAD_VK_CODES_WINDOWS,
+}
+
+
+# ============================================================================
 # Windows-Specific Special Keys
 # ============================================================================
 
@@ -79,4 +125,8 @@ __all__ = [
     "SPECIAL_KEYS_WINDOWS",
     "SPECIAL_KEYS_MAC",
     "SPECIAL_KEYS",
+    "NUMPAD_NAME_ALIASES",
+    "NUMPAD_VK_CODES_WINDOWS",
+    "NUMPAD_VK_CODES_MAC",
+    "NUMPAD_VK_CODES_BY_PLATFORM",
 ]

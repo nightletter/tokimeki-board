@@ -5,13 +5,16 @@ from threading import Lock, Timer
 from typing import Any
 
 from core.events import KeyEvent, ScrollDirection, ScrollEvent, ScrollPhase
-from src.services.keys import SPECIAL_KEYS
+from src.services.keys import (
+    NUMPAD_NAME_ALIASES,
+    NUMPAD_VK_CODES_BY_PLATFORM,
+    SPECIAL_KEYS,
+)
 
 
 # ============================================================================
 # Keyboard Input
 # ============================================================================
-
 
 def import_keyboard_backend():
     try:
@@ -28,12 +31,24 @@ def extract_typed_key(key: Any) -> str | None:
         if value == " ":
             return "space"
         return value
-    
-    # Fall back to special key name
-    name = getattr(key, "name", None)
-    if isinstance(name, str) and name in SPECIAL_KEYS:
-        return name
 
+    name = getattr(key, "name", None)
+    if isinstance(name, str):
+        normalized_name = NUMPAD_NAME_ALIASES.get(name)
+        if normalized_name is not None:
+            return normalized_name
+
+        if name in SPECIAL_KEYS:
+            return name
+
+    vk = getattr(key, "vk", None)
+    if isinstance(vk, int):
+        for platform_vk_codes in NUMPAD_VK_CODES_BY_PLATFORM.values():
+            normalized_vk = platform_vk_codes.get(vk)
+            if normalized_vk is not None:
+                return normalized_vk
+
+    # Fall back to special key name
     return None
 
 

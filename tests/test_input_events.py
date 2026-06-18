@@ -5,6 +5,15 @@ from __future__ import annotations
 import pytest
 
 from core.events import KeyEvent, ScrollDirection, ScrollEvent, ScrollPhase
+from src.services.keys import NUMPAD_VK_CODES_MAC, NUMPAD_VK_CODES_WINDOWS
+from src.services.input_handler import extract_typed_key
+
+
+class DummyKey:
+    def __init__(self, char=None, name=None, vk=None):
+        self.char = char
+        self.name = name
+        self.vk = vk
 
 
 class TestScrollPhase:
@@ -121,7 +130,34 @@ class TestKeyEvent:
 
     def test_key_event_unicode_characters(self):
         """Test KeyEvent with unicode characters."""
-        unicode_keys = ["?", "!", ".", "한글", "日本語"]
+        unicode_keys = ["?", "!", ".", "한", "가"]
         for key in unicode_keys:
             event = KeyEvent(value=key)
             assert event.value == key
+
+
+class TestExtractTypedKey:
+    """Test key extraction and normalization."""
+
+    @pytest.mark.parametrize(
+        ("key", "expected"),
+        [
+            (DummyKey(char="0", name="num_0"), "0"),
+            (DummyKey(char="5", name="numpad_5"), "5"),
+            (DummyKey(char=".", name="num_decimal"), "."),
+            (DummyKey(char=None, name="decimal"), "."),
+            (DummyKey(char=None, name="num_9"), "9"),
+            (DummyKey(char=None, name="numpad_3"), "3"),
+            (DummyKey(char=None, name="numpad_decimal"), "."),
+            *[
+                (DummyKey(char=None, vk=vk), expected)
+                for vk, expected in NUMPAD_VK_CODES_WINDOWS.items()
+            ],
+            *[
+                (DummyKey(char=None, vk=vk), expected)
+                for vk, expected in NUMPAD_VK_CODES_MAC.items()
+            ],
+        ],
+    )
+    def test_extract_typed_key_normalizes_numpad_input(self, key, expected):
+        assert extract_typed_key(key) == expected
